@@ -1,5 +1,7 @@
 package com.easybytes.config;
 
+import com.easybytes.exceptionHandling.CustomAccessDeniedHandler;
+import com.easybytes.exceptionHandling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -21,19 +23,19 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class ProjectSecurityConfig {
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf( csrfConfig -> csrfConfig.disable())
+    http.sessionManagement(smc -> smc.invalidSessionUrl("/invalidSession")
+            .maximumSessions(3))
+        .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
+        .csrf( csrfConfig -> csrfConfig.disable())
         .authorizeHttpRequests((requests) -> requests
           .requestMatchers("/myAccount","/myBalance","myLoans").authenticated()
-          .requestMatchers("notices","/contact","/error", "/register").permitAll()
+          .requestMatchers("notices","/contact","/error", "/register", "invalidSession").permitAll()
     );
     http.formLogin(withDefaults());
-    http.httpBasic(withDefaults());
+    http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+    http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
     return http.build();
   }
-//  @Bean
-//  public UserDetailsService userDetailsService(DataSource dataSource){
-//    return new JdbcUserDetailsManager(dataSource);
-//  }
   @Bean
   public PasswordEncoder passwordEncoder(){
     return PasswordEncoderFactories.createDelegatingPasswordEncoder();
