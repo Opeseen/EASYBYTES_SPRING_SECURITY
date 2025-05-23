@@ -24,6 +24,7 @@ import java.util.Collections;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+@SuppressWarnings("SpellCheckingInspection")
 @Configuration
 @Profile("!prod")
 public class ProjectSecurityConfig {
@@ -36,7 +37,6 @@ public class ProjectSecurityConfig {
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
-
     http
         .securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
         .sessionManagement(sessionConfig ->
@@ -55,11 +55,20 @@ public class ProjectSecurityConfig {
         }))
         .csrf(csrfConfig ->
             csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
+                .ignoringRequestMatchers( "/contact","/register")
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
         .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
         .authorizeHttpRequests((requests) -> requests
-          .requestMatchers("/myAccount","/myBalance","myLoans", "/user").authenticated()
+//          .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+//          .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
+//          .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+//          .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+          .requestMatchers("/myAccount").hasRole("USER")
+          .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
+          .requestMatchers("/myLoans").hasRole("USER")
+          .requestMatchers("/myCards").hasRole("USER")
+          .requestMatchers("/user").authenticated()
           .requestMatchers("notices","/contact","/error", "/register", "invalidSession").permitAll()
     );
     http.formLogin(withDefaults());
