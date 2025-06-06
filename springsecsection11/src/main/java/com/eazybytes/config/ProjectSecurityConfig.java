@@ -2,10 +2,7 @@ package com.eazybytes.config;
 
 import com.eazybytes.exceptionHandling.CustomAccessDeniedHandler;
 import com.eazybytes.exceptionHandling.CustomBasicAuthenticationEntryPoint;
-import com.eazybytes.filter.AuthoritiesLoggingAfterFilter;
-import com.eazybytes.filter.CorsConfigFilter;
-import com.eazybytes.filter.CsrfCookieFilter;
-import com.eazybytes.filter.RequestValidationBeforeFilter;
+import com.eazybytes.filter.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -29,15 +26,16 @@ public class ProjectSecurityConfig {
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
     CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
     http
-        .securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
         .sessionManagement(sessionConfig ->
-            sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)) // always create a session to be used to access resources
+            sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //create a session to be used to access resources
         .cors(cors -> cors.configurationSource(new CorsConfigFilter()))
         .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
             .ignoringRequestMatchers( "/contact","/register")
             .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
         .addFilterAfter(new AuthoritiesLoggingAfterFilter(),BasicAuthenticationFilter.class)
+        .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+        .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
         .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
         .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()) // Only HTTP
         .authorizeHttpRequests((requests) -> requests
