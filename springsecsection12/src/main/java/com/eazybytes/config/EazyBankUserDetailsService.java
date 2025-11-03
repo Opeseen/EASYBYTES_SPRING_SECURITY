@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class EazyBankUserDetailsService implements UserDetailsService {
 
-  private final CustomerRepository customerRepository;/**
+  private final CustomerRepository customerRepository;
+  /**
    * @param username the username identifying the user whose data is required.
    * @return
    * @throws UsernameNotFoundException
