@@ -29,16 +29,16 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class ProjectSecurityConfig {
 
     // for opaque token application.properties injection
-    /*
-    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-uri}")
-    String introspectionUri;
 
-    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-id}")
-    String clientId;
+//    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-uri}")
+//    String introspectionUri;
+//
+//    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-id}")
+//    String clientId;
+//
+//    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-secret}")
+//    String clientSecret;
 
-    @Value("${spring.security.oauth2.resourceserver.opaque.introspection-client-secret}")
-    String clientSecret;
-     */
 
   @Bean
   SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
@@ -65,12 +65,14 @@ public class ProjectSecurityConfig {
     // jwt token example
     http.oauth2ResourceServer(rsc -> rsc.jwt(jwtConfigurer
         -> jwtConfigurer.jwtAuthenticationConverter(jwtAuthenticationConverter)));
+
     // Opaque token example
-    /*http.oauth2ResourceServer(rsc ->
-        rsc.opaqueToken(atc ->
-            atc.authenticationConverter(new KeycloakOpaqueRoleConverter())
-                .introspectionUri(this.introspectionUri)
-                .introspectionClientCredentials(this.clientId, this.clientSecret)));*/
+//    http.oauth2ResourceServer(rsc ->
+//        rsc.opaqueToken(atc ->
+//            atc.authenticationConverter(new KeycloakOpaqueRoleConverter())
+//                .introspectionUri(this.introspectionUri)
+//                .introspectionClientCredentials(this.clientId, this.clientSecret)));
+
     http.exceptionHandling(ehc ->
         ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
     return http.build();
